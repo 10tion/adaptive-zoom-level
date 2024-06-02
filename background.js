@@ -44,6 +44,7 @@ const setZoomLevel = () => {
 // Reset zoom level on any display changes.
 //
 // Not sure if we really need this.
+// Comment out this block if you are using Safari.
 chrome.system.display.onDisplayChanged.addListener(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
         if (chrome.runtime.lastError)
