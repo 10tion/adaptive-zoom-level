@@ -1,3 +1,5 @@
+const isChrome = chrome.runtime.getURL('').startsWith('chrome-extension://');
+
 const loadConfigurations = () => {
     return chrome.storage.local.get(["configs"]);
 }
@@ -33,7 +35,7 @@ const setZoomLevel = () => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
         if (chrome.runtime.lastError)
             console.error(chrome.runtime.lastError);
-        if (tab.url && tab.url.startsWith("chrome://"))
+        if (tab && tab.url && tab.url.startsWith("chrome://"))
             return;
 
         chrome.tabs.setZoom(tab.id, zoomLevel / 100);
@@ -41,25 +43,24 @@ const setZoomLevel = () => {
     });
 }
 
-// // Reset zoom level on any display changes.
-// //
-// // Not sure if we really need this.
-// // Comment out this block if you are using Safari.
-// chrome.system.display.onDisplayChanged.addListener(() => {
-//     chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
-//         if (chrome.runtime.lastError)
-//             console.error(chrome.runtime.lastError);
-//         if (tab.url && tab.url.startsWith("chrome://"))
-//             return;
+// Reset zoom level on any display changes.
+//
+// Not sure if we really need this.
+isChrome && chrome.system.display.onDisplayChanged.addListener(() => {
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
+        if (chrome.runtime.lastError)
+            console.error(chrome.runtime.lastError);
+        if (tab && tab.url && tab.url.startsWith("chrome://"))
+            return;
 
-//         chrome.tabs.sendMessage(tab.id, { action: "getDisplayInfo" }, response => {
-//             if (!!response && !!response.displayInfo) {
-//                 currentDisplay = response.displayInfo;
-//                 setZoomLevel();
-//             }
-//         });
-//     });
-// })
+        chrome.tabs.sendMessage(tab.id, { action: "getDisplayInfo" }, response => {
+            if (!!response && !!response.displayInfo) {
+                currentDisplay = response.displayInfo;
+                setZoomLevel();
+            }
+        });
+    });
+})
 
 // Communicate with content script and settings.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
