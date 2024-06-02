@@ -41,25 +41,25 @@ const setZoomLevel = () => {
     });
 }
 
-// Reset zoom level on any display changes.
-//
-// Not sure if we really need this.
-// Comment out this block if you are using Safari.
-chrome.system.display.onDisplayChanged.addListener(() => {
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
-        if (chrome.runtime.lastError)
-            console.error(chrome.runtime.lastError);
-        if (tab.url && tab.url.startsWith("chrome://"))
-            return;
+// // Reset zoom level on any display changes.
+// //
+// // Not sure if we really need this.
+// // Comment out this block if you are using Safari.
+// chrome.system.display.onDisplayChanged.addListener(() => {
+//     chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
+//         if (chrome.runtime.lastError)
+//             console.error(chrome.runtime.lastError);
+//         if (tab.url && tab.url.startsWith("chrome://"))
+//             return;
 
-        chrome.tabs.sendMessage(tab.id, { action: "getDisplayInfo" }, response => {
-            if (!!response && !!response.displayInfo) {
-                currentDisplay = response.displayInfo;
-                setZoomLevel();
-            }
-        });
-    });
-})
+//         chrome.tabs.sendMessage(tab.id, { action: "getDisplayInfo" }, response => {
+//             if (!!response && !!response.displayInfo) {
+//                 currentDisplay = response.displayInfo;
+//                 setZoomLevel();
+//             }
+//         });
+//     });
+// })
 
 // Communicate with content script and settings.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
