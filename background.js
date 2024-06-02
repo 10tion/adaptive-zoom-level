@@ -36,10 +36,16 @@ const setZoomLevel = () => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
         if (chrome.runtime.lastError)
             console.error(chrome.runtime.lastError);
-        // if (tab && tab.url && tab.url.startsWith("chrome://"))
-        //     return;
 
-        chrome.tabs.setZoom(tab.id, zoomLevel / 100);
+        let zoomLevelF = zoomLevel / 100;
+        chrome.tabs.getZoom(tab.id).then((curZoomLevelF) => {
+            if (Math.abs(curZoomLevelF - zoomLevelF) > 0.0001) {
+                chrome.tabs.setZoom(tab.id, zoomLevelF);
+            }
+        }).catch((err) => {
+            console.log("Failed to fetch current zoom settings: ", err);
+            chrome.tabs.setZoom(tab.id, zoomLevelF);
+        });
         chrome.action.setBadgeText({text: zoomLevel.toString()});
     });
 }
