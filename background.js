@@ -18,6 +18,7 @@ let currentDisplay = { height: 0, width: 0 }
 loadConfigurations().then((result) => {
     if (!!result.configs) {
         resUAMap = new Map(Object.entries(result.configs));
+        setZoomLevel();
     }
 });
 
@@ -35,8 +36,8 @@ const setZoomLevel = () => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
         if (chrome.runtime.lastError)
             console.error(chrome.runtime.lastError);
-        if (tab && tab.url && tab.url.startsWith("chrome://"))
-            return;
+        // if (tab && tab.url && tab.url.startsWith("chrome://"))
+        //     return;
 
         chrome.tabs.setZoom(tab.id, zoomLevel / 100);
         chrome.action.setBadgeText({text: zoomLevel.toString()});
