@@ -1,5 +1,19 @@
 const isChrome = chrome.runtime.getURL('').startsWith('chrome-extension://');
 
+const isInBlockList = (tab) => {
+    const blockList = ['https://music.youtube.com', 'https://keep.google.com', 'https://photos.google.com/', 'http://192.168.68.67:8080'];
+    if (!tab || !tab.url)
+        return true;
+    if (tab.url.includes('127.0.0.1'))
+        return true;
+    for (const block of blockList) {
+        if (tab.url.startsWith(block)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 const loadConfigurations = () => {
     return chrome.storage.local.get(["configs"]);
 }
@@ -36,6 +50,8 @@ const setZoomLevel = () => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
         if (chrome.runtime.lastError)
             console.error(chrome.runtime.lastError);
+        if (isInBlockList(tab))
+            return;
 
         let zoomLevelF = zoomLevel / 100;
         chrome.tabs.getZoom(tab.id).then((curZoomLevelF) => {
@@ -57,7 +73,7 @@ isChrome && chrome.system.display.onDisplayChanged.addListener(() => {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, ([tab]) => {
         if (chrome.runtime.lastError)
             console.error(chrome.runtime.lastError);
-        if (tab && tab.url && tab.url.startsWith("chrome://"))
+        if (tab && tab.url && (tab.url.startsWith("chrome://") || tab.url.startsWith("localhost:")))
             return;
 
         chrome.tabs.sendMessage(tab.id, { action: "getDisplayInfo" }, response => {
