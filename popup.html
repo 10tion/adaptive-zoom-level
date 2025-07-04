@@ -1,54 +1,44 @@
 <html>
-
+<head>
+    <link rel="stylesheet" type="text/css" href="popup.css">
+</head>
 <body>
-    <h1>Rules</h1>
-    <table>
-        <tr>
-            <th>Resolution</th>
-            <th></th>
-            <th>Zoom Level (%)</th>
-            <th></th>
-        </tr>
-        <tr>
-            <td><input type="text" id="newResolution"></td>
-            <td><button type="button" id="detectDisplay">Detect</button></td>
-            <td><input type="text" id="newZoomLevel"></td>
-            <td><button type="button" id="addNewConfigButton"">Add</button></td>
-        </tr>
-    </table>
-
+    <h1>Zoom Configurations</h1>
+    <div class="input-group">
+        <input type="text" id="newResolution" placeholder="Resolution (e.g., 1920x1080)">
+        <button type="button" id="detectDisplay">Detect</button>
+        <input type="text" id="newZoomLevel" placeholder="Zoom (%)">
+        <button type="button" id="addNewConfigButton">Add</button>
+    </div>
     <table id="configurations">
         <tr>
-            <th>Resolution </th>
-            <th>Zoom Level (%)</th>
+            <th>Resolution</th>
+            <th>Zoom Level</th>
             <th></th>
         </tr>
     </table>
 
-    <h1>Exceptions</h1>
-    <p>This extension will not manage websites in the exception list.</p>
-    <table>
+    <div class="checkbox-group">
+        <input type="checkbox" id="showZoomLevel" name="showZoomLevel">
+        <label for="showZoomLevel">Show zoom level on icon</label>
+    </div>
+
+    <h1>Excluded Sites</h1>
+    <p>This extension will not manage websites in the exclusion list.</p>
+    <div class="input-group">
+        <input type="text" id="newException" placeholder="e.g., https://example.com">
+        <button type="button" id="addExceptionButton">Add</button>
+    </div>
+    <table id="exceptions">
         <tr>
             <th>Website</th>
             <th></th>
         </tr>
-        <tr>
-            <td><input type="text" id="newException"></td>
-            <td><button type="button" id="addExceptionButton">Add</button></td>
-        </tr>
     </table>
 
-    <table id="exceptions">
-        <tr>
-            <!-- <th>Website</th> -->
-            <th></th>
-        </tr>
-    </table>
-
-    <button type="button" id="save">Save</button>
+    <button type="button" id="save">Save Settings</button>
     <p id="saveResult"></p>
 
     <script src="popup.js"></script>
 </body>
-
 </html>

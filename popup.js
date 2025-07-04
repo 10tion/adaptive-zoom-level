@@ -6,14 +6,18 @@ const contentLoadConfigurations = () => {
         if (!!response.exceptions) {
             renderExceptions(response.exceptions);
         }
+        if (response.showZoomLevel) {
+            document.getElementById("showZoomLevel").checked = true;
+        }
     });
 }
 
 const contentSaveConfigurations = () => {
-    chrome.runtime.sendMessage({ action: "save", configs: getPageData(), exceptions: getExceptions() }, response => {
+    let showZoomLevel = document.getElementById("showZoomLevel").checked;
+    chrome.runtime.sendMessage({ action: "save", configs: getPageData(), exceptions: getExceptions(), showZoomLevel: showZoomLevel }, response => {
         const saveResult = document.getElementById("saveResult");
         if (response.status === "success") {
-            saveResult.textContent = "Saved!";
+            saveResult.textContent = "Settings saved!";
             setTimeout(() => {
                 saveResult.textContent = "";
             }, 3000);
@@ -35,6 +39,7 @@ const addNewRow = (res, zoomLevel) => {
     let deleteButton = document.createElement('input');
     deleteButton.type = "button";
     deleteButton.value = "Delete";
+    deleteButton.className = "delete-btn";
     deleteButton.onclick = deleteCurrentRow;
 
     row.insertCell(0).innerText = res;
@@ -48,6 +53,7 @@ const addNewExceptionRow = (exception) => {
     let deleteButton = document.createElement('input');
     deleteButton.type = "button";
     deleteButton.value = "Delete";
+    deleteButton.className = "delete-btn";
     deleteButton.onclick = deleteCurrentRow;
 
     row.insertCell(0).innerText = exception;
@@ -87,16 +93,19 @@ const getExceptions = () => {
 const addConfiguration = () => {
     let newRes = document.getElementById("newResolution").value;
     let newZoomLevel = document.getElementById("newZoomLevel").value;
-    addNewRow(newRes, newZoomLevel);
-
-    document.getElementById("newResolution").value = "";
-    document.getElementById("newZoomLevel").value = "";
+    if (newRes && newZoomLevel) {
+        addNewRow(newRes, newZoomLevel);
+        document.getElementById("newResolution").value = "";
+        document.getElementById("newZoomLevel").value = "";
+    }
 }
 
 const addException = () => {
     let newException = document.getElementById("newException").value;
-    addNewExceptionRow(newException);
-    document.getElementById("newException").value = "";
+    if (newException) {
+        addNewExceptionRow(newException);
+        document.getElementById("newException").value = "";
+    }
 }
 
 const detectDisplay = () => {
@@ -111,4 +120,12 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("addExceptionButton").addEventListener("click", addException);
     document.getElementById("detectDisplay").addEventListener("click", detectDisplay);
     document.getElementById("save").addEventListener("click", contentSaveConfigurations);
+});
+
+// Communicate with content script and settings.
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "updateDisplayInfo") {
+        document.getElementById("newResolution").value = request.displayInfo.width + "x" + request.displayInfo.height;
+    }
+    return true;
 });

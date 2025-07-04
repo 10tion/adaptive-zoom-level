@@ -1,19 +1,21 @@
 const isChrome = chrome.runtime.getURL('').startsWith('chrome-extension://');
 
 const loadConfigurations = () => {
-    return chrome.storage.local.get(["configs", "exceptions"]);
+    return chrome.storage.local.get(["configs", "exceptions", "showZoomLevel"]);
 }
 
-const saveConfigurations = (configs, exceptions) => {
-    return chrome.storage.local.set({ configs: configs, exceptions: exceptions }).then(() => {
+const saveConfigurations = (configs, exceptions, showZoomLevel) => {
+    return chrome.storage.local.set({ configs: configs, exceptions: exceptions, showZoomLevel: showZoomLevel }).then(() => {
         console.log("Configuration saved.");
         resUAMap = new Map(Object.entries(configs));
         exceptionsList = Array.from(exceptions);
+        showZoomLevelBadge = showZoomLevel;
     });
 }
 
 let resUAMap = new Map();
 let exceptionsList = new Array();
+let showZoomLevelBadge = true;
 
 let currentDisplay = { height: 0, width: 0 }
 
@@ -23,6 +25,9 @@ loadConfigurations().then((result) => {
     }
     if (!!result.exceptions) {
         exceptionsList = Array.from(result.exceptions);
+    }
+    if (result.showZoomLevel !== undefined) {
+        showZoomLevelBadge = result.showZoomLevel;
     }
     setZoomLevel();
 });
@@ -66,7 +71,11 @@ const setZoomLevel = () => {
             console.log("Failed to fetch current zoom settings: ", err);
             chrome.tabs.setZoom(tab.id, zoomLevelF);
         });
-        chrome.action.setBadgeText({text: zoomLevel.toString()});
+        if (showZoomLevelBadge) {
+            chrome.action.setBadgeText({text: zoomLevel.toString()});
+        } else {
+            chrome.action.setBadgeText({text: ""});
+        }
     });
 }
 
@@ -92,7 +101,7 @@ isChrome && chrome.system.display.onDisplayChanged.addListener(() => {
 // Communicate with content script and settings.
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "save") {
-        saveConfigurations(request.configs, request.exceptions)
+        saveConfigurations(request.configs, request.exceptions, request.showZoomLevel)
             .then(() => {
                 setZoomLevel();
                 sendResponse({ status: "success" });
@@ -102,7 +111,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 sendResponse({ status: "failure", error: error.message });
             });
     } else if (request.action === "load") {
-        loadConfigurations().then((res) => sendResponse({configs: res.configs, exceptions: res.exceptions}));
+        loadConfigurations().then((res) => sendResponse({configs: res.configs, exceptions: res.exceptions, showZoomLevel: res.showZoomLevel}));
     } else if (request.action === "updateDisplayInfo") {
         if (request.displayInfo.height != currentDisplay.height || request.displayInfo.width != currentDisplay.width) {
             currentDisplay = request.displayInfo;
