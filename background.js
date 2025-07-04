@@ -35,8 +35,6 @@ loadConfigurations().then((result) => {
 const isInExceptionsList = (tab) => {
     if (!tab || !tab.url)
         return true;
-    if (tab.url.includes('127.0.0.1'))
-        return true;
     for (const exception of exceptionsList) {
         if (tab.url.startsWith(exception)) {
             return true;
